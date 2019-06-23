@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import AddUser from "../component/AddUser";
 import { Modal, Button, Input, Icon, DatePicker } from "antd";
 import ListUser from '../component/ListUser'
+import { Container } from 'reactstrap';
 export class Content extends Component {
     state = {
         listView: false
@@ -13,13 +14,16 @@ export class Content extends Component {
     }
     render() {
         return (
+            <Container>
             <div  className = "ant-layout-content">
                 <AddUser />
-                <Button onClick ={() => this.handleClick()}>
+                 <ListUser />
+                {/*<Button onClick ={() => this.handleClick()}>
                     List The User
                 </Button>
-                {this.state.listView ? <ListUser />  : null}
+                {this.state.listView ? <ListUser />  : null}*/}
             </div>
+            </Container>
         )
     }
 }

@@ -12,7 +12,30 @@ code {
     monospace;
 }
 
-
+.add-user-form input {
+     margin: 5px 0px;
+    height: 45px;
+}
+.add-user {
+  display: flex;
+    position: relative;
+    left: 90%;
+    width: 10px !important;
+    padding : 10px;
+}
+.add-user button {
+  background-color: #7dbcea;
+  color: white;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.has-error {
+    border: 1px solid red;
+    box-shadow: 0px 0px 5px red;
+}
+.has-error-text {
+  color: red;
+}
 .ant-layout-header,
 .ant-layout-footer {
   background: #7dbcea;
@@ -20,6 +43,9 @@ code {
   font-weight: 800;
   font-size: 25px;
   text-align: center;
+      text-transform: uppercase;
+    letter-spacing: 5px;
+    font-family: roboto
 }
 .ant-layout-footer {
   line-height: 1.5;
@@ -30,8 +56,8 @@ code {
   line-height: 120px;
 }
 .ant-layout-content {
-  background: rgba(16, 142, 233, 1);
-  color: #fff;
+ /* background: rgba(16, 142, 233, 1);
+  color: #fff;*/
   min-height: 120px;
   line-height: 120px;
   text-align: center;
@@ -45,16 +71,57 @@ button.ant-btn.ant-btn-success {
   margin: 15px auto; 
   justify-content: center;
   align-content: center;
+  width: 100%;  
+  height: 50px;
 }
 
 span.ant-calendar-picker {
   display: block;
-  margin-top: 10px;
 }
 span.ant-input-affix-wrapper {
   margin-bottom: 10px;
 }
+.ant-modal-title{
+  text-align: center;
+}
+.ant-table-thead > tr > th.ant-table-column-has-actions.ant-table-column-has-sorters{
+  text-align: center;
+  letter-spacing: 0.5px;
+    font-family: roboto;
+    text-transform: uppercase;
+}
+.ant-table-row {
+  cursor: pointer;
+  text-align: center;
+}
+.ant-table-thead > tr:first-child > th:first-child {
+  text-align: center;
+}
+.ant-table-thead tr th {
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 0.5px;
+    font-family: roboto;
+    text-transform: uppercase;
+}
+.edit-icon,.read-icon,
+.delete-icon{
+  font-size: 20px;
+  padding: 0 7px;
 
-.ant-layout-footer{
-  
+}
+.edit-icon > svg,
+.delete-icon > svg,
+.read-icon > svg{
+  transition: all 0.3s ease;
+}
+
+.edit-icon:hover > svg,
+.delete-icon:hover > svg,
+.read-icon:hover >svg{
+  fill: #27ae60;
+}
+
+.ant-table-row {
+  cursor: auto;
 }
