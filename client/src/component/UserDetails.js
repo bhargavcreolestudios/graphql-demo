@@ -8,12 +8,16 @@ import gql from "graphql-tag";
 import { Modal, Button, Input, Icon, DatePicker } from "antd";
 
 class UserDetails extends Component {
-  state = { visible: true };
+  state = { visible: true, pollFlag:100 };
 
   handleCancel = () => {
     this.props.setDetailFlag();
   };
-
+  componentDidMount(){
+    this.setState({
+      pollFlag:0
+    })
+  }
   List_UserDetails = gql`
     query user_details($user_id: Int!) {
       user_details(user_id: $user_id) {
@@ -36,6 +40,29 @@ class UserDetails extends Component {
       }
     }
   `;
+
+  Refresh_UserDetails = gql`
+  query user_details{
+    user_details{
+      id
+      user_id
+      gender
+      hobby
+      phone_no
+      user {
+        id
+        firstName
+        lastName
+        email
+        dateofbirth
+      }
+      address{
+        defaultAddress
+        address
+      }
+    }
+  }
+`;
   componentDidMount() {
     this.setState({ visible: true });
   }
@@ -44,10 +71,14 @@ class UserDetails extends Component {
 
     return (
       <div>
-        <Query query={this.List_UserDetails} variables={{ user_id: detailId }}>
+        <Query query={this.List_UserDetails} variables={{ user_id: detailId }}
+        pollInterval={this.state.pollFlag}
+        partialRefetch={true}
+        >
           {({ loading, error, data }) => {
             if (loading) return null;
             if (error) return `Error! ${error}`;
+
             return (
               <Modal
                 title="Detail User"
@@ -82,7 +113,7 @@ class UserDetails extends Component {
                       }
                       )}
                       <li>{record.gender}</li>
-                      <li>{record.hobby}</li>
+                      {JSON.parse(record.hobby).map((hobby,index) => <li key={index}>{hobby}</li>)}
                       <li>{record.phone_no}</li>
                     </div>
                   ))}

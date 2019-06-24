@@ -4,8 +4,17 @@ import * as Yup from "yup";
 import { Formik } from "formik";
 import gql from "graphql-tag";
 import moment from "moment";
-import { Query, Mutation } from "react-apollo";
-import { Table, Button, Modal, Input, Icon, DatePicker } from "antd";
+import { Query, Mutation, withApollo } from "react-apollo";
+import {
+  Table,
+  Button,
+  Modal,
+  Input,
+  Icon,
+  DatePicker,
+  Checkbox,
+  Radio
+} from "antd";
 import AddUser from "./AddUser";
 import UserDetails from "./UserDetails";
 export class ListUser extends Component {
@@ -21,9 +30,10 @@ export class ListUser extends Component {
   };
 
   showModal = record => {
+    console.log(record.user_details[0], "recordrecord");
     this.setState({
       visible: true,
-      record
+      record: record.user_details[0]
     });
   };
 
@@ -45,7 +55,18 @@ export class ListUser extends Component {
     });
   };
   edit = record => {
-    this.showModal(record);
+    /* Using the query as the props without JSX */
+    const { client } = this.props;
+    let res = client
+      .query({
+        query: this.List_UserDetails,
+        variables: { user_id: record.id }
+      })
+      .then(res => {
+        if (!res.loading) {
+          this.showModal(res.data);
+        }
+      });
   };
   delete = id => {
     this.setState({
@@ -77,12 +98,9 @@ export class ListUser extends Component {
       };
     });
   };
-  changeRecords = response => {
-    if (!response.loading) {
-      console.log(response, "datadatadata");
-    }
-    console.log(this.refTable.props.dataSource);
-  };
+  Options = ["Playing", "Gaming", "Reading", "Watching TV"];
+
+  changeRecords = response => {};
   List_User = gql`
     query LisitingQuery {
       user {
@@ -105,24 +123,65 @@ export class ListUser extends Component {
       }
     }
   `;
+  /* 
+
+
+      
+
+  */
   update_User = gql`
     mutation updateUser(
       $id: Int!
       $firstName: String!
       $lastName: String!
       $email: String!
+      $dateofbirth: String!
+      $gender: String!
+      $hobby: String!
+      $phone_no: String!
+      $defaultAddress: Int!
+      $address: String!
+
     ) {
       updateUser(
         id: $id
         firstName: $firstName
         lastName: $lastName
         email: $email
+        dateofbirth: $dateofbirth
+        gender: $gender
+        hobby: $hobby
+        phone_no: $phone_no
+        defaultAddress: $defaultAddress
+        address: $address
       ) {
         id
         firstName
         lastName
         email
         dateofbirth
+      }
+    }
+  `;
+  List_UserDetails = gql`
+    query user_details($user_id: Int!) {
+      user_details(user_id: $user_id) {
+        id
+        user_id
+        gender
+        hobby
+        phone_no
+        user {
+          id
+          firstName
+          lastName
+          email
+          dateofbirth
+        }
+        address {
+          defaultAddress
+          address
+        }
       }
     }
   `;
@@ -137,7 +196,14 @@ export class ListUser extends Component {
       .required("Required"),
     email: Yup.string()
       .email("Invalid Email")
-      .required("Required")
+      .required("Required"),
+    dateOfBirth: Yup.date().required(),
+    gender: Yup.string().required("Required"),
+    hobby: Yup.array().required("Required"),
+    phone_no: Yup.string()
+      .min(6)
+      .required("Required"),
+    dAddress: Yup.string() 
   });
 
   handleUserDetails = record => {
@@ -292,18 +358,42 @@ export class ListUser extends Component {
                 >
                   <Formik
                     initialValues={{
-                      firstName: this.state.record.firstName,
-                      lastName: this.state.record.lastName,
-                      email: this.state.record.email
+                      firstName: this.state.record.user[0].firstName,
+                      lastName: this.state.record.user[0].lastName,
+                      email: this.state.record.user[0].email,
+                       dateOfBirth: moment(
+                        this.state.record.user[0].dateofbirth
+                      ),
+                      gender: this.state.record.gender,
+                      hobby: JSON.parse(this.state.record.hobby),
+                      phone_no: this.state.record.phone_no,
+                      dAddress: this.state.record.address[0].address 
                     }}
                     validationSchema={this.updateUserSchema}
                     onSubmit={(values, { setSubmitting }) => {
+                       let date = values.dateOfBirth.format(
+                        "YYYY-MM-DD hh:mm:ss"
+                      );
+                      let phone_no = String(values.phone_no);
+                      let hobby = JSON.stringify(values.hobby);
+                      let defaultAddress = 1;
+                      if (!values.dAddress) {
+                        defaultAddress = 0;
+                      }
+                      console.log(values,"valuesvaluesvalues"); 
+
                       updateUser({
                         variables: {
-                          id: this.state.record.id,
+                          id: this.state.record.user[0].id,
                           firstName: values.firstName,
                           lastName: values.lastName,
-                          email: values.email
+                          email: values.email,
+                           dateofbirth: date,
+                          gender: values.gender,
+                          phone_no: phone_no,
+                          hobby: hobby,
+                          defaultAddress: defaultAddress,
+                          address: values.dAddress 
                         }
                       });
                       this.changeRecords(response);
@@ -363,6 +453,93 @@ export class ListUser extends Component {
                           value={values.email}
                         />
                         {errors.email && touched.email && errors.email}
+
+                        <Input
+                          placeholder="Enter Default Address"
+                          type="text"
+                          name="dAddress"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          value={values.dAddress}
+                          className={
+                            errors.dAddress &&
+                            touched.dAddress &&
+                            errors.dAddress
+                              ? "has-error"
+                              : null
+                          }
+                        />
+                        <DatePicker
+                          allowClear={false}
+                          onChange={date => {
+                            setFieldValue("dateOfBirth", moment(date));
+                          }}
+                          value={values.dateOfBirth}
+                          name="dateOfBirth"
+                          className={
+                            errors.dateOfBirth &&
+                            touched.dateOfBirth &&
+                            errors.dateOfBirth
+                              ? "has-error"
+                              : null
+                          }
+                        />
+                        <div className="m-2">
+                          <span
+                            className={
+                              errors.gender && touched.gender && errors.gender
+                                ? "m-2 has-error-text"
+                                : "m-2"
+                            }
+                          >
+                            Gender
+                          </span>
+                          <Radio.Group
+                            disabled={true}
+                            onChange={data => {
+                              setFieldValue("gender", data.target.value);
+                            }}
+                            value={values.gender}
+                          >
+                            <Radio value={"Male"}>Male</Radio>
+                            <Radio value={"Female"}>Female</Radio>
+                          </Radio.Group>
+                        </div>
+                        <div>
+                          <Input
+                            placeholder="Enter your phone number"
+                            type="text"
+                            name="phone_no"
+                            onChange={handleChange}
+                            onBlur={handleBlur}
+                            value={values.phone_no}
+                            className={
+                              errors.phone_no &&
+                              touched.phone_no &&
+                              errors.phone_no
+                                ? "has-error"
+                                : null
+                            }
+                          />
+                        </div>
+                        <div className="m-3">
+                          <span
+                            className={
+                              errors.hobby && touched.hobby && errors.hobby
+                                ? "p-2 has-error-text"
+                                : "p-2"
+                            }
+                          >
+                            Hobby
+                          </span>
+                          <Checkbox.Group
+                            options={this.Options}
+                            value={values.hobby}
+                            onChange={data => {
+                              setFieldValue("hobby", data);
+                            }}
+                          />
+                        </div>
                         <button
                           type="submit"
                           className="ant-btn ant-btn-primary addUser-button"
@@ -406,4 +583,4 @@ export class ListUser extends Component {
   }
 }
 
-export default ListUser;
+export default withApollo(ListUser);

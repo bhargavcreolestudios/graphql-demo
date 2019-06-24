@@ -24,6 +24,7 @@ export class AddUser extends Component {
       // phone_no: "",
       // dateOfBirth: null
     };
+    this.refForm.state.touched = {}
     this.refForm.state.errors = {};
     this.setState({
       visible: false
@@ -88,7 +89,7 @@ export class AddUser extends Component {
     dateOfBirth: Yup.date().required(),
     gender: Yup.string().required("Required"),
     hobby: Yup.array().required("Required"),
-    phone_no: Yup.number()
+    phone_no: Yup.string()
       .min(6)
       .required("Required"),
     dAddress: Yup.string()
@@ -132,7 +133,10 @@ export class AddUser extends Component {
                   let date = values.dateOfBirth.format("YYYY-MM-DD hh:mm:ss");
                   let phone_no = String(values.phone_no);
                   let hobby = JSON.stringify(values.hobby);
-
+                  let defaultAddress = 1
+                  if(!values.dAddress){
+                    defaultAddress = 0
+                  }
                   addUser({
                     variables: {
                       firstName: values.firstName,
@@ -142,7 +146,7 @@ export class AddUser extends Component {
                       gender: values.gender,
                       phone_no: phone_no,
                       hobby: hobby,
-                      defaultAddress:0,
+                      defaultAddress:defaultAddress,
                       address: values.dAddress
                     }
                   });
@@ -256,7 +260,7 @@ export class AddUser extends Component {
                     <div>
                       <Input
                         placeholder="Enter your phone number"
-                        type="number"
+                        type="text"
                         name="phone_no"
                         onChange={handleChange}
                         onBlur={handleBlur}
@@ -280,9 +284,8 @@ export class AddUser extends Component {
                       </span>
                       <Checkbox.Group
                         options={this.Options}
-                        defaultValue={["Apple"]}
+                        value={values.hobby}
                         onChange={data => {
-                          console.log(data);
                           setFieldValue("hobby", data);
                         }}
                       />

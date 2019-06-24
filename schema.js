@@ -49,8 +49,7 @@ const User = new GraphQLObjectType({
         resolve(user) {
           return user.createdOn;
         }
-      },
-     
+      }
     };
   }
 });
@@ -79,9 +78,9 @@ const UserDetails = new GraphQLObjectType({
         }
       },
       hobby: {
-        type:  GraphQLString,
+        type: GraphQLString,
         resolve(user) {
-          let userHobby = user.hobby
+          let userHobby = user.hobby;
           return userHobby;
         }
       },
@@ -93,20 +92,20 @@ const UserDetails = new GraphQLObjectType({
       },
       user: {
         type: new GraphQLList(User),
-        resolve(parent,user){
-          data =  Db.models.user.findAll({
-            where: {id :  parent.user_id }
-          })
-          return data
+        resolve(parent, user) {
+          data = Db.models.user.findAll({
+            where: { id: parent.user_id }
+          });
+          return data;
         }
       },
       address: {
         type: new GraphQLList(UserAddress),
         resolve(parent, user) {
-          data =  Db.models["userAddress"].findAll({
-            where: {user_id :  parent.user_id }
-          })
-          return data
+          data = Db.models["userAddress"].findAll({
+            where: { user_id: parent.user_id }
+          });
+          return data;
         }
       }
     };
@@ -146,8 +145,7 @@ const UserAddress = new GraphQLObjectType({
         resolve(user) {
           return user.dateofbirth;
         }
-      },
-    
+      }
     };
   }
 });
@@ -158,7 +156,7 @@ const Query = new GraphQLObjectType({
     return {
       user: {
         type: new GraphQLList(User),
-        args:{id : {type : GraphQLInt}},
+        args: { id: { type: GraphQLInt } },
         resolve(root, args) {
           return Db.models.user.findAll({
             where: args,
@@ -168,10 +166,10 @@ const Query = new GraphQLObjectType({
       },
       user_details: {
         type: new GraphQLList(UserDetails),
-        args:{user_id : {type : GraphQLInt}},
+        args: { user_id: { type: GraphQLInt } },
         resolve(root, args) {
           return Db.models["user-details"].findAll({
-            where: args,
+            where: args
           });
         }
       }
@@ -226,15 +224,15 @@ const Mutation = new GraphQLObjectType({
             Db.models["user-details"].create({
               user_id: res.id,
               gender: args.gender,
-              hobby:args.hobby,
+              hobby: args.hobby,
               phone_no: args.phone_no
-            })
+            });
             Db.models["userAddress"].create({
               user_id: res.id,
               defaultAddress: args.defaultAddress,
-              address:args.address,
-            })
-          })
+              address: args.address
+            });
+          });
 
           let allData = Db.models.user.findAll({
             arguments: ["id", "firstName", "lastName", "email", "dateofbirth"],
@@ -258,6 +256,24 @@ const Mutation = new GraphQLObjectType({
           },
           email: {
             type: new GraphQLNonNull(GraphQLString)
+          },
+          dateofbirth: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          gender: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          hobby: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          phone_no: {
+            type: new GraphQLNonNull(GraphQLString)
+          },
+          defaultAddress: {
+            type: new GraphQLNonNull(GraphQLInt)
+          },
+          address: {
+            type: GraphQLString
           }
         },
         resolve(source, args) {
@@ -265,9 +281,29 @@ const Mutation = new GraphQLObjectType({
             {
               firstName: args.firstName,
               lastName: args.lastName,
-              email: args.email
+              email: args.email,
+              dateofbirth: new Date(args.dateofbirth)
             },
             { where: { id: args.id } }
+          );
+        
+          let data =  Db.models["user-details"].update(
+            {
+              hobby: args.hobby,
+              gender: args.gender,
+              phone_no: args.phone_no
+            },
+            { where: { user_id: args.id } }
+          );
+          data.then(res => {
+            console.log(res, "argsargs");
+          });
+          Db.models["userAddress"].update(
+            {
+              address: args.address,
+              defaultAddress: args.defaultAddress
+            },
+            { where: { user_id: args.id } }
           );
           let allData = Db.models.user.findAll({
             order: [["id", "DESC"]],
@@ -286,6 +322,9 @@ const Mutation = new GraphQLObjectType({
         },
         resolve(source, args) {
           Db.models.user.destroy({ where: { id: args.id } });
+          Db.models["user-details"].destroy({ where: { user_id: args.id } });
+          Db.models["userAddress"].destroy({ where: { user_id: args.id } });
+
           let allData = Db.models.user.findAll({
             arguments: ["id", "firstName", "lastName", "email", "dateofbirth"],
             order: [["id", "DESC"]]
